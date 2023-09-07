@@ -40,6 +40,10 @@ public class ClassEntityService {
         return classRepository.findAllByOrderByYearAsc();
     }
 
+    public List<ClassEntity> getClassesWithoutProfessor() {
+        return classRepository.findByProfessorIsNull();
+    }
+
     public ResponseEntity<ApiResponse<ClassEntity>> getClassById(Long id) {
         Optional<ClassEntity> myClass = classRepository.findById(id);
         ApiResponse<ClassEntity> response = new ApiResponse<>();
@@ -171,5 +175,4 @@ public class ClassEntityService {
         classRepository.save(tempOptionalClass.get());
         return new ResponseEntity<>("Professor added.", HttpStatus.OK);
     }
-
 }

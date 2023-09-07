@@ -32,6 +32,11 @@ public class ClassEntityController {
         return classService.getClasses();
     }
 
+    @GetMapping("get/classes-wtihout-professor")
+    public List<ClassEntity> getClassesWithoutProfessor(){
+        return classService.getClassesWithoutProfessor();
+    }
+
     @GetMapping("get/{id}")
     public ResponseEntity<ApiResponse<ClassEntity>> getClassById(@PathVariable Long id){
         return classService.getClassById(id);

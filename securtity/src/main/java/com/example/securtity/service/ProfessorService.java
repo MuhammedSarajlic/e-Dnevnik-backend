@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.securtity.models.ClassEntity;
+import com.example.securtity.repository.ClassEntityRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +35,8 @@ public class ProfessorService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ClassEntityRepository classEntityRepository;
 
     public List<Professor> getAllProfessors(){
         return professorRespository.findAll();
@@ -49,6 +54,7 @@ public class ProfessorService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @Transactional
     public ResponseEntity<String> addProfessor(Professor professor) {
         if(professorRespository.existsByEmail(professor.getEmail())){
             return new ResponseEntity<>("Professor with this email already exist.", HttpStatus.BAD_REQUEST);
@@ -56,12 +62,19 @@ public class ProfessorService {
         if(userRepository.existsByUsername(professor.getEmail())){
             return new ResponseEntity<>("Username already exist", HttpStatus.BAD_REQUEST);
         }
+
         Professor newProfessor = new Professor();
         newProfessor.setFirstName(professor.getFirstName());
         newProfessor.setLastName(professor.getLastName());
         newProfessor.setEmail(professor.getEmail());
+        if(professor.getAssignedClass().getId() != null){
+            Optional<ClassEntity> tempClassOptional = classEntityRepository.findById(professor.getAssignedClass().getId());
+            tempClassOptional.get().setProfessor(newProfessor);
+            newProfessor.setAssignedClass(tempClassOptional.get());
+        }
 
         professorRespository.save(newProfessor);
+
 
         String pass = professor.getFirstName().toLowerCase() + professor.getLastName().toLowerCase();
         UserEntity user = new UserEntity();
@@ -89,5 +102,27 @@ public class ProfessorService {
         
         professorRespository.save(tempProfessor);
         return new ResponseEntity<>("Professor edited.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> deleteProfessor(List<Long> professorIdList) {
+        for(Long id : professorIdList){
+            Optional<Professor> existingProfessor = professorRespository.findById(id);
+            if(existingProfessor.isEmpty()){
+                return new ResponseEntity<>("Professor not found", HttpStatus.NOT_FOUND);
+            }
+            if(existingProfessor.get().getAssignedClass() != null){
+                Optional<ClassEntity> tempClassOptional = classEntityRepository.findById(existingProfessor.get().getAssignedClass().getId());
+                if(tempClassOptional.isPresent()){
+                    tempClassOptional.get().setProfessor(null);
+                }
+            }
+            Optional<UserEntity> tempUserOptional = userRepository.findByUsername(existingProfessor.get().getEmail());
+            if(tempUserOptional.isEmpty()){
+                return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
+            }
+            userRepository.deleteById(tempUserOptional.get().getId());
+            professorRespository.deleteById(id);
+        }
+        return new ResponseEntity<>("Professor deleted", HttpStatus.OK);
     }
 }

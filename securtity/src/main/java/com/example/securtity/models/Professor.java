@@ -35,11 +35,12 @@ public class Professor {
     private String lastName;
     private String email;
     @JsonIgnoreProperties("professor")
-    @OneToOne(mappedBy = "professor", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST })
+    @JoinColumn(name = "assigned_class")
     @Nullable
     private ClassEntity assignedClass;
     @JsonIgnoreProperties("professor")
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST })
     @JoinTable(name = "subject_professor",
                 joinColumns = @JoinColumn(name = "professor_id"),
                 inverseJoinColumns = @JoinColumn(name = "subject_id"))

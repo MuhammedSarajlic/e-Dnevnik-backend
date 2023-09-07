@@ -4,13 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.securtity.models.Professor;
 import com.example.securtity.response.ApiResponse;
@@ -41,5 +35,10 @@ public class ProfessorController {
     @PutMapping("edit/{id}")
     public ResponseEntity<String> editProfessor(@PathVariable Long id, @RequestBody Professor professor){
         return professorService.editProfessor(id, professor);
+    }
+
+    @DeleteMapping("delete")
+    public ResponseEntity<String> deleteProfessor(@RequestBody List<Long> professorIdList){
+        return professorService.deleteProfessor(professorIdList);
     }
 }
